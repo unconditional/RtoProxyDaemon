@@ -1,0 +1,20 @@
+{
+  "Serilog": {
+    "WriteTo": [
+      {
+        "Name": "File",
+        "Args": {
+          "path": "log.txt",
+          "rollingInterval": "Month"
+        }
+      },
+      {
+        "Name": "Console"
+      }
+    ]
+  },
+  "RtoProxy": {
+    "Port": 8080,
+    "ProxyType": "HTTP" 
+  } 
+}
