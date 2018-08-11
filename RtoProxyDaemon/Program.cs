@@ -41,7 +41,7 @@ namespace RtoProxyDaemon
             var config = new ConfigurationBuilder()
                 .AddJsonFile("config.json", false)
                 .Build();
-            
+
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(config)
                 .CreateLogger();
@@ -131,7 +131,7 @@ namespace RtoProxyDaemon
                     };
             using (var hc = new HttpClient(handler))
             {
-                hc.DefaultRequestHeaders.Add("User-Agent", "rto/proxy-app"); 
+                hc.DefaultRequestHeaders.Add("User-Agent", "rto/proxy-app");
 
                 string response = null;
                 try
@@ -147,9 +147,9 @@ namespace RtoProxyDaemon
                     Log.Error("Proxy mismatch. Response: {Response}", response);
                     return false;
                 }
-                catch (HttpRequestException e)
+                catch (HttpRequestException)
                 {
-                    Log.Error(e, "Proxy check failed");
+                    Log.Error("Proxy check failed");
                 }
                 catch (Exception e)
                 {
@@ -188,20 +188,22 @@ namespace RtoProxyDaemon
         private static async void Tunnel(ProxyInfo curProxy, TcpClient client)
         {
             using (var stream = client.GetStream())
-            using (var proxyClient = new TcpClient(curProxy.Host, curProxy.Port))
-                using (var proxyStream = proxyClient.GetStream())
+            {
+                try
                 {
-                    try
+                    using (var proxyClient = new TcpClient(curProxy.Host, curProxy.Port))
+                    using (var proxyStream = proxyClient.GetStream())
                     {
                         await Task.WhenAny(
                             proxyStream.CopyToAsync(stream),
                             stream.CopyToAsync(proxyStream));
                     }
-                    catch (Exception e)
-                    {
-                        Log.Debug(e, "Exception during tunneling proxy");
-                    }
                 }
+                catch (Exception e)
+                {
+                    Log.Debug(e, "Exception during tunneling proxy");
+                }
+            }
         }
     }
 }
